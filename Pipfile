@@ -6,6 +6,14 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+ftputil = "*"
+pandas = "*"
+bpython = "*"
+jupyter = "*"
+sqlalchemy = "*"
+psycopg2 = "*"
+psycopg2-binary = "*"
+sqlalchemy-utils = "*"
 
 [requires]
 python_version = "3.8"
