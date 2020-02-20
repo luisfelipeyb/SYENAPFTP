@@ -65,11 +65,11 @@ def chain_structure(list_ticket_file):
         try:
             frame = transform_file(val)
         except Exception as e:
-            print(f"Index: {idx} File: {val}")
+            print(f'Index: {idx} File: {val}')
         else:
             chain_data.append(frame)
-        chain_frame = pd.concat(chain_data, ignore_index=True, sort=False)
-        return chain_frame
+    chain_frame = pd.concat(chain_data, ignore_index=True, sort=False)
+    return chain_frame
 
 
 def frame_reg(frame_structure, reg_name):
@@ -97,7 +97,6 @@ def frame_reg(frame_structure, reg_name):
             return dynamic_frame
         else:
             print("No differences since last execution.")
-            return
 
 
 def storeid_table():
@@ -113,16 +112,19 @@ def storeid_table():
     return dataframe_storeid
 
 
+df_storeid = storeid_table()
+
+
 def store_idx(frame):
-    store_idx = []
+    store_idn = []
     df_storeid = storeid_table()
 
-    for f in frame["storename"]:
-        for idx, s in enumerate(df_storeid["name"]):
-            if f == s:
-                store_id = df_storeid["store_id"].iloc[idx]
-                store_idx.append(store_id)
-    return store_idx
+    for f in frame['storename']:
+        for idx, s in enumerate(df_storeid['name']):
+            if f.lower().replace(' ', '') == s.lower().replace(' ', ''):
+                store_id = df_storeid['store_id'].iloc[idx]
+                store_idn.append(store_id)
+    return store_idn
 
 
 def transform_structure(frame):
@@ -156,22 +158,27 @@ def transform_structure(frame):
     return data_set
 
 
-def modify_reg(file_reg_path):
+def modify_reg(reg_name):
     import datetime
+    outdir = '.temp_reg'
+    outname = f'{reg_name}.csv'
+    fullname_path = os.path.join(outdir, outname)
 
-    reg_path = f".temp_reg/{file_reg_path}.csv"
-
-    file_csv = pd.read_csv(file_reg_path, sep=",")
+    file_csv = pd.read_csv(fullname_path, sep=",")
     file_csv.drop("Unnamed: 0", axis=1, inplace=True)
     file_csv["reg_date"] = pd.to_datetime(file_csv["reg_date"])
 
     today = datetime.date.today()
     filt_day = file_csv["reg_date"].dt.date == today
     new_reg = file_csv.loc[~filt_day]
-    new_reg.to_csv(file_reg_path)
+    new_reg.to_csv(fullname_path)
 
 
-def store_to_database(frame, str_table_name, file_reg_path):
+def store_to_database(frame, str_table_name, reg_name):
+    outdir = '.temp_reg'
+    outname = f'{reg_name}.csv'
+    fullname_path = os.path.join(outdir, outname)
+
     start_time = time.perf_counter()
     db_path = (
         f'{os.environ["URL_DATABASE_DRIVER"]}://{os.environ["URL_DATABASE_USERNAME"]}:'
@@ -202,7 +209,7 @@ def store_to_database(frame, str_table_name, file_reg_path):
                 f"Successfully Transferred"
             )
     except Exception as e:
-        modify_reg(file_reg_path)
+        modify_reg(fullname_path)
         print("Database not Available at this moment.")
 
 
